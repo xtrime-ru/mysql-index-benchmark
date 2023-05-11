@@ -1,0 +1,33 @@
+x-logging:
+  &default-logging
+  driver: json-file
+  options:
+    max-size: '10k'
+    max-file: '2'
+
+services:
+  benchmark:
+    build: .
+    restart: no
+    init: true
+    volumes:
+      - ./:/app
+    working_dir: /app
+    depends_on:
+      - mysql
+    environment:
+      WAIT_HOSTS: mysql:3306
+    logging: *default-logging
+
+  mysql:
+    image: mariadb:10.8
+    restart: no
+    ports:
+      - "127.0.0.1:10306:3306"
+    volumes:
+      - ./.mysql:/var/lib/mysql
+    environment:
+      MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: 'yes'
+      MARIADB_AUTO_UPGRADE: 'yes'
+    command: ["mysqld", "--skip-grant-tables"]
+    logging: *default-logging
