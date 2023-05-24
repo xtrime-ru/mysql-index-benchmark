@@ -69,8 +69,15 @@ class DataBase
             $size -= $count;
         }
 
+        $generator  = function(int $size): Generator {
+            $counter = 0;
+            while ($counter < $size) {
+                $counter++;
+                yield $counter;
+            }
+        };
         $bulk = [];
-        foreach (range(1, $size) as $_) {
+        foreach ($generator($size) as $_) {
             $bulk[] = sprintf("('%s', %s)", rand(0, 1) === 1 ? 'male' : 'female', rand(18, 75));
             if (count($bulk) >= $chunk) {
                 $insertSql = implode(",\n", $bulk);

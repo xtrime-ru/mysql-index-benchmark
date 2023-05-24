@@ -10,7 +10,7 @@ TableA has increasing selectivity of index and TableB - decreasing.
 ## Run
 
 ```shell
-docker compose run --rm becnhmark
+docker compose run --rm benchmark
 ```
 
 ## Example of output
