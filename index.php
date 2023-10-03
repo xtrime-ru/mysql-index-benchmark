@@ -25,6 +25,7 @@ $queries = [
     "(user_id IN (-1))",
     "(gender IN ('UNKNOWN'))",
     "(user_id IN (1024, 2048, 12345, 7890123456))",
+    "(gender IN ('female'))",
     "(gender IS NOT NULL)",
     "(user_id IS NOT NULL)",
 ];
