@@ -36,11 +36,12 @@ class DataBase
     function createTable(string $table, string $index): void
     {
         $this->connection->query(/** @lang=MariaDB */ <<<SQL
-         CREATE TABLE IF NOT EXISTS `$table`
+         DROP TABLE IF EXISTS `$table`;
+         CREATE TABLE `$table`
             (
                 `id` BIGINT UNSIGNED AUTO_INCREMENT,
                 `gender` ENUM('male', 'female'),
-                `age` TINYINT UNSIGNED,
+                `user_id` INT UNSIGNED,
                 PRIMARY KEY (`id`),
                 $index
             )
@@ -78,12 +79,12 @@ class DataBase
         };
         $bulk = [];
         foreach ($generator($size) as $_) {
-            $bulk[] = sprintf("('%s', %s)", rand(0, 1) === 1 ? 'male' : 'female', rand(18, 75));
+            $bulk[] = sprintf("('%s', %s)", rand(0, 1) === 1 ? 'male' : 'female', rand(1, 1000000));
             if (count($bulk) >= $chunk) {
                 $insertSql = implode(",\n", $bulk);
                 $bulk = [];
                 $this->connection->query(/** @lang=MariaDB */ <<<SQL
-                   INSERT INTO `$table` (`gender`, `age`)
+                   INSERT INTO `$table` (`gender`, `user_id`)
                    VALUES 
                        $insertSql
                 SQL
@@ -92,9 +93,8 @@ class DataBase
         }
         if (count($bulk) > 0) {
             $insertSql = implode(",\n", $bulk);
-            $bulk = [];
             $this->connection->query(/** @lang=MariaDB */ <<<SQL
-               INSERT INTO `$table` (`gender`, `age`)
+               INSERT INTO `$table` (`gender`, `user_id`)
                VALUES 
                    $insertSql
             SQL
@@ -104,17 +104,16 @@ class DataBase
 
     public function copyTable(string $from, string $to)
     {
-        $this->connection->query(/** @lang=MariaDB */ "TRUNCATE TABLE `$to`");
         $this->connection->query(/** @lang=MariaDB */ "INSERT INTO `$to` SELECT * FROM `$from`");
     }
 
     public function count(string $table, string $query): int
     {
         return $this->connection->query(/** @lang=MariaDB */ <<<SQL
-            SELECT SQL_NO_CACHE count(*) as `total` FROM `$table`
+            SELECT SQL_NO_CACHE * FROM `$table`
             WHERE $query
         SQL
-        )->fetch(PDO::FETCH_ASSOC)['total'];
+        )->rowCount();
     }
 
     public function explain(string $table, string $query): string
@@ -126,5 +125,3 @@ class DataBase
         )->fetch(PDO::FETCH_ASSOC)['ANALYZE'];
     }
 }
-
-
